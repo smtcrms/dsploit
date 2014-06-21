@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 oldpwd=$(pwd)
 
@@ -75,7 +75,7 @@ ndk_build=$(which ndk-build) || \
 (echo "android NDK not found, please ensure that it's directory is in your PATH"; die)
 
 ndk_dir=$(dirname "${ndk_build}")
-ndk_dir+="/build/core/"
+ndk_dir="$ndk_dir/build/core/"
 
 sudo=""
 
@@ -86,6 +86,12 @@ for s in $ndk_empty_scripts; do
     $sudo touch "${ndk_dir}${s}" >&3 2>&1 || die
   fi
 done
+
+# Check if firebird's autoconfig header symlink is broken
+if [ ! -e $(pwd)/firebird/src/include/gen/autoconfig.h ] ; then
+  rm $(pwd)/firebird/src/include/gen/autoconfig.h
+  ln -s $(pwd)/firebird/src/include/gen/autoconfig.auto $(pwd)/firebird/src/include/gen/autoconfig.h
+fi
 
 echo -n "building native executables..."
 ndk-build -j$(grep -E "^processor" /proc/cpuinfo | wc -l) >&3 2>&1 || die
@@ -133,6 +139,12 @@ directories="/enc/trans/
 /racc/
 /"
 pkg="ruby"
+
+# Check if realpath is installed.
+if [ ! -x $(which realpath) ]; then
+  sudo apt-get install -y realpath
+  # <insert other installation methods for other distros here>
+fi
 
 echo -e "\n*** creating ruby package ***"
 
